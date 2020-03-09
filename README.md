@@ -9,6 +9,20 @@ We are going to present a somewhat simplified overview.
 
 // https://www.thesslstore.com/blog/explaining-ssl-handshake/
 
+1. Exchange encryption capabilities
+2. authenticate the certificate
+3. exchange session key
+
+
+
+#### Exchange encryption Capabilities
+
+The client must tell the server what kinds of encrytion it can handle
+
+
+#### authenticate the certificate
+
+The server sends the client, not just it's own certificate (called a "leaf", because it is at the end of the "branch"), but a chain of certificates.  The client then checks that the chain leading from the server's leaf certificate all the way up to the Certificate Authority is valid.  It must ensure that the chain matches, the certificates are not expired, and the certificates have not been revoked.  
 
 With HTTPS, before any application data is sent, the server sends the browser its certificate.  A certificate is basically just a filled out form that is meant to prove that the server is who it says it is.  
 
@@ -21,6 +35,13 @@ TLS handshake
 
 (show flow diagram)
 
+Certificate Authorities
+
+
+
+The initial connection is asymmetric.  The client encrypts data using the server's public key.  Then, once the client and server agree on a session key (a symmetric key), they can have two-way encrypted communication.
+
+Let's take a short break to talk about how asymmetric keys can be used to generate symmetric keys:
 
 ## Ceasar Cipher Example
 We already know about the Ceasar Cipher.  If you want to exchange encrypted letters with someone using a Ceasar Cipher, you both need to have the same secret number.  But if you are the writer, how do you tell your reader what the secret number is?  You can't simply write in in the top corner of the letter, because anyone who intercepts the letter would be able to decode it.  There are some ways around this.  You might have a dead-drop that you both know about, where you can place the secret number.  But then how do you securely communicate about the dead-drop's location...  It seems like an infinite regression.
