@@ -10,8 +10,6 @@ https.createServer(options, function (req, res) {
   res.writeHead(200, {'Content-Type': 'text/plain'});
   res.write('Hello World!');
   res.end();
-//   res.send('hi')
-//   res.end("hello world\n");
 }).listen(8000);
 
 
@@ -34,4 +32,4 @@ https.createServer(options, function (req, res) {
 
 
 
-show that its actually encrypted using wireshark
+// show that its actually encrypted using wireshark
