@@ -52,15 +52,24 @@ curl google.com -v
 ```
 
 ```bash
-ip.addr == 172.217.8.206
+ip.addr == 172.217.8.206  //use duckduckgo, search for network security
 ```
 
+Here you'll notice a couple differences.  First off, the protocols are different.  Instead of HTTP, we have TLS.  What other differences do you notice? 
+    -port, encrypted application data is gibberish
 
-HTTPS adds some extra steps to the initial interaction between a client (browser) and a server.  The end result of all those steps is an agreement between the client and the browser to use a specific encryption mechanism.  So when you send your credit card number in a form, even if someone intercepts the message (very easy to do as we'll see), there won't be anything useful for a potential attacker to steal.
+Here we have no idea what information we were sending to the server.  So even if someone had intercepted this, they wouldn't be able to do anything with it. 
+
+
+But how does this encryption happen?
+
+We saw some TCP packets that preceeded either the HTTP or TLS protocols.  HTTPS adds some extra steps to the initial interaction between a client (browser) and a server. Before sending the application data (OSI layer 7), there is what is called a "TLS handshake".  The TLS handshake is when the encryption is negotiated.
+
+ The end result of all these steps is an agreement between the client and the browser to use a specific encryption mechanism.  So when you send your credit card number in a form, even if someone intercepts the message (very easy to do as we'll see), there won't be anything useful for a potential attacker to steal.
 
 (Wireshark)
 
-We are going to present a somewhat simplified overview.
+We are going to present a somewhat simplified overview of that negotiation.
 
 // https://www.thesslstore.com/blog/explaining-ssl-handshake/
 
