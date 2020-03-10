@@ -1,6 +1,61 @@
 ## Public Key Cryptography
 
-What is the difference between HTTP and HTTPS?  
+You might have noticed that, when browsing on the internet you will occasionally see different icons to the left of the url bar.
+
+If we go to some random [blog](http://derpturkey.com/), we see an information icon with "Not secure" text.  If we click on the icon, we get some scary red text reiterating that our connection is indeed not secure. 
+
+(image)
+
+ But don't unplug your computer and hide under the bed just yet.  That warning is just telling you that the website's server is using HTTP.  HTTP just means that the traffic is unencrypted and could be intercepted without any real effort (as we'll see shortly).  
+
+In this case, I think the attempt to scare you away from derpturkey.com is a little overblown.  After all, it's just a blog.  You go there, you read the content, and then you leave.  <i>You</i> aren't sending any data, and you certainly aren't sending any sensitive date.
+
+But most browser makers take a 'better safe than sorry' approach to informing users.  However, if you are going to be sending data that you wouldn't want the whole world to see, then you should encrypt your data before you send it--with HTTPS.
+
+Encryption is the difference between HTTP and HTTPS.  Before we get into how all of this works, let's try intercepting some traffic from an HTTP connection and then an HTTPS connection.
+
+### (Wireshark example)
+In order to to that, we are going to use a very common networking tool called Wireshark.  You can download it for free [here](https://www.wireshark.org/download.html).
+
+Hopefully, after using Wireshark, you'll be just a little bit more paranoid about web security.  Let's just let it run for a minute and see what we get:
+
+(run capture)
+
+Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, so we're going to narrow things down a bit.
+
+Since Wireshark can capture just about everying on your network, we are going to narrow down.  Let's first look at derpturkey.com.  We'll first get the ip address
+
+```bash
+curl derpturkey.com -v
+```
+If you look at the first couple lines of output, you will see derpturkey.com's ip address: 50.16.86.72.  We can use this to filter our capture:
+
+```bash
+ip.addr == 50.16.86.72
+```
+(image)
+
+Now try clicking somewhere, and see what happens.  You should see a bunch of packets start to populate your screen.  If you look at the "protocol" columnnt, you will notice that some are TCP and others are HTTP.  If you double-click on one of the packets, you;ll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  Feel free to click around, but for now we only care about the HTTP layer.  
+
+If you expand the Hypertext Transfer Protocol line, you should see some familiar faces.  The kind of request (GET), the different headers, and so on.
+
+In the bottom window we have the raw bytes on the left and the slightly-easier-to-read utf-8 encoding on the right.  These are the chunks that make up the flow of the internet.
+
+Wireshark also allows us to take a look at an entire conversation.  Choose a packet, right-click it, then follow, then HTTP stream.  You should see the whole conversation laid out for you.  
+
+This packet capture represents the detailed history of our internet browsing.  It's a good thing we didn't send anything important over the wire!
+
+Now let's do the same with with a server that uses HTTPS:
+
+```bash
+curl google.com -v
+```
+
+```bash
+ip.addr == 172.217.8.206
+```
+
+
 HTTPS adds some extra steps to the initial interaction between a client (browser) and a server.  The end result of all those steps is an agreement between the client and the browser to use a specific encryption mechanism.  So when you send your credit card number in a form, even if someone intercepts the message (very easy to do as we'll see), there won't be anything useful for a potential attacker to steal.
 
 (Wireshark)
