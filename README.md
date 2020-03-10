@@ -23,7 +23,7 @@ Hopefully, after using Wireshark, you'll be just a little bit more paranoid abou
 
 Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, so we're going to narrow things down a bit.
 
-Since Wireshark can capture just about everying on your network, we are going to narrow down.  Let's first look at derpturkey.com.  We'll first get the ip address
+Since Wireshark can capture just about everying on your network, we are going to narrow it down.  Let's first look at derpturkey.com, a Javascript coding blog.  We'll first get the ip address
 
 ```bash
 curl derpturkey.com -v
@@ -35,7 +35,19 @@ ip.addr == 50.16.86.72
 ```
 (image)
 
-Now try clicking somewhere, and see what happens.  You should see a bunch of packets start to populate your screen.  If you look at the "protocol" columnnt, you will notice that some are TCP and others are HTTP.  If you double-click on one of the packets, you;ll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  Feel free to click around, but for now we only care about the HTTP layer.  
+Now try clicking somewhere, and see what happens.  You should see a bunch of packets start to populate your screen.  If you look at the "protocol" columnn, you will notice that some are TCP and others are HTTP.  If you double-click on one of the packets, you'll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  
+
+This brings us to the so-called OSI model.  The OSI model has either 7 or 5 layers, but for our purposes, 5 is fine.  
+
+https://docs.oracle.com/cd/E19683-01/806-4075/ipov-10/index.html
+
+(image)
+
+The higher the numbers go, the more abstract things get.  We spend most of our time at the very top of the OSI model, but it's not a bad idea to know a little bit about the lower layers.
+
+We already know a little something about the Network layer (IP), and we'll be playing around with the Transport layer too (TCP UDP)
+
+Feel free to click around, but for now we only care about the HTTP layer.  
 
 If you expand the Hypertext Transfer Protocol line, you should see some familiar faces.  The kind of request (GET), the different headers, and so on.
 
@@ -100,6 +112,8 @@ TLS handshake
 (show flow diagram)
 
 Certificate Authorities
+
+(click on certificates in the browser)
 
 
 
@@ -170,3 +184,26 @@ Feel free to let your eyes glaze over.  The point is that, through some mathmati
 
 If we now run alice_bob_message_exchange.py, we see that an encrypted message can be sent and received, even though both parties have withheld information.
 
+
+
+
+
+
+
+
+
+## Challenges
+
+#### Wireshark
+
+    -DNS packet analysis
+    -observing the wire (authentication) http://www-net.cs.umass.edu/wireshark-labs/Wireshark_HTTP_v7.0.pdf       http://gaia.cs.umass.edu/wireshark-labs/protected_pages/HTTP-wireshark-file5.html
+        -we will learn more about base64 encoding when we talk about JSON Web Tokens
+
+
+
+#### Create HTTPS Server
+    -Create server
+    -Add HTTPS
+    -Make your browser trust the cert
+    -Create a certificate chain
