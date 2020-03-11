@@ -8,7 +8,6 @@ If we go to some random [blog](http://derpturkey.com/), we see an information ic
 
 If we click on the icon, we get some scary red text reiterating that our connection is indeed not secure. 
 
-(image)
 ![scary red text](readme/scary-red.png)
 
  But don't unplug your computer and hide under the bed just yet.  That warning is just telling you that the website's server is using HTTP.  HTTP just means that the traffic is unencrypted and could be intercepted without any real effort (as we'll see shortly).  
@@ -19,13 +18,12 @@ But most browser makers take a 'better safe than sorry' approach to informing us
 
 Encryption is the difference between HTTP and HTTPS.  Before we get into how all of this works, let's try intercepting some traffic from an HTTP connection and then an HTTPS connection.
 
-### (Wireshark example)
+### Introduction to Wireshark
 In order to to that, we are going to use a very common networking tool called Wireshark.  You can download it for free [here](https://www.wireshark.org/download.html).
 
 Hopefully, after using Wireshark, you'll be just a little bit more paranoid about web security.  Let's just let it run for a minute and see what we get:
 
 (run capture)
-![HTTP capture](readme/derpturkey-http-capture.PNG)
 
 Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, so we're going to narrow things down a bit.
 
@@ -39,21 +37,37 @@ If you look at the first couple lines of output, you will see derpturkey.com's i
 ```bash
 ip.addr == 50.16.86.72
 ```
-(image)
+![HTTP capture](readme/derpturkey-http-capture.PNG)
 
-Now try clicking somewhere, and see what happens.  You should see a bunch of packets start to populate your screen.  If you look at the "protocol" columnn, you will notice that some are TCP and others are HTTP.  If you double-click on one of the packets, you'll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  
+Now try clicking around the webpage and see what happens.  You should see a bunch of packets start to populate your screen.  
 
-This brings us to the so-called OSI model.  The OSI model has either 7 or 5 layers, but for our purposes, 5 is fine.  
+If you look at the "protocol" columnn, you will notice that some are TCP and others are HTTP.  If you double-click on one of the packets, you'll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  
 
-https://docs.oracle.com/cd/E19683-01/806-4075/ipov-10/index.html
+This brings us to the so-called "OSI model". The OSI (Open Systems Interconnection) model is an abstraction that is used to understand the different layers in a network-- all the way from wires to cat pictures.
 
-![OSI](readme/OSI.PNG)
+The OSI model has either 7 or 5 layers, depending on who you ask (5,6,and 7 are taken together).  But for our purposes, 5 is fine.  
+
+
+![osi](readme/tcp-ip-stack.png)
+<!-- https://docs.oracle.com/cd/E19683-01/806-4075/ipov-10/index.html
+
+![OSI](readme/OSI.PNG) -->
 
 The higher the numbers go, the more abstract things get.  We spend most of our time at the very top of the OSI model, but it's not a bad idea to know a little bit about the lower layers.
 
-We already know a little something about the Network layer (IP), and we'll be playing around with the Transport layer too (TCP UDP)
+Wireshark gives a good illustration of the 5-layer OSI model:
 
-Feel free to click around, but for now we only care about the HTTP layer.  
+![wireshark-osi](readme/http-wireshark)
+
+Datalink (Ethernet II)
+Network (Internet Protocol Version 4)
+Transport (Transmission Control Protocol)
+Application (Hypertext Transfer Protocol)
+
+
+We already know a little something about the Network layer (IP), and we'll be playing around with the Transport layer too (TCP)
+
+Feel free to click around, but for now we only care about the Application layer.  
 
 If you expand the Hypertext Transfer Protocol line, you should see some familiar faces.  The kind of request (GET), the different headers, and so on.
 
@@ -61,20 +75,29 @@ In the bottom window we have the raw bytes on the left and the slightly-easier-t
 
 Wireshark also allows us to take a look at an entire conversation.  Choose a packet, right-click it, then follow, then HTTP stream.  You should see the whole conversation laid out for you.  
 
+[http-conversation](readme/http-conversation)
+
 This packet capture represents the detailed history of our internet browsing.  It's a good thing we didn't send anything important over the wire!
 
 Now let's do the same with with a server that uses HTTPS:
 
+(Note: capture then find the ip address)
+
 ```bash
 curl google.com -v
+curl duckduckgo.com -v
 ```
 
 ```bash
 ip.addr == 172.217.8.206  //use duckduckgo, search for network security
+ip.addr == 107.20.240.232
 ```
+[tcp-tls](readme/tcp-tls.png)
 
 Here you'll notice a couple differences.  First off, the protocols are different.  Instead of HTTP, we have TLS.  What other differences do you notice? 
     -port, encrypted application data is gibberish
+
+[tcp-stream](readme/tcp-stream.png)
 
 Here we have no idea what information we were sending to the server.  So even if someone had intercepted this, they wouldn't be able to do anything with it. 
 
@@ -227,3 +250,4 @@ Through some kind of magic, public key cryptography allows two people to share e
     -Add HTTPS
     -Make your browser trust the cert
     -Create a certificate chain
+    https://engineering.circle.com/https-authorized-certs-with-node-js-315e548354a2
