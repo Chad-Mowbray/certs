@@ -4,7 +4,7 @@ You might have noticed that, when browsing on the internet you will occasionally
 
 If we go to some random [blog](http://derpturkey.com/), we see an information icon with "Not secure" text.
 
-![not secure](readme/derpturkey.PNG)
+![not secure](readme/derpturkey.png)
 
 If we click on the icon, we get some scary red text reiterating that our connection is indeed not secure. 
 
@@ -37,7 +37,7 @@ If you look at the first couple lines of output, you will see derpturkey.com's i
 ```bash
 ip.addr == 50.16.86.72
 ```
-![HTTP capture](readme/derpturkey-http-capture.PNG)
+![HTTP capture](readme/derpturkey-http-capture.png)
 
 Now try clicking around the webpage and see what happens.  You should see a bunch of packets start to populate your screen.  
 
@@ -57,7 +57,7 @@ The higher the numbers go, the more abstract things get.  We spend most of our t
 
 Wireshark gives a good illustration of the 5-layer OSI model:
 
-![wireshark-osi](readme/http-wireshark)
+![wireshark-osi](readme/http-wireshark.png)
 
 Datalink (Ethernet II)
 Network (Internet Protocol Version 4)
@@ -75,7 +75,7 @@ In the bottom window we have the raw bytes on the left and the slightly-easier-t
 
 Wireshark also allows us to take a look at an entire conversation.  Choose a packet, right-click it, then follow, then HTTP stream.  You should see the whole conversation laid out for you.  
 
-[http-conversation](readme/http-conversation)
+![http-conversation](readme/http-conversation.png)
 
 This packet capture represents the detailed history of our internet browsing.  It's a good thing we didn't send anything important over the wire!
 
@@ -92,12 +92,12 @@ curl duckduckgo.com -v
 ip.addr == 172.217.8.206  //use duckduckgo, search for network security
 ip.addr == 107.20.240.232
 ```
-[tcp-tls](readme/tcp-tls.png)
+![tcp-tls](readme/tcp-tls.png)
 
 Here you'll notice a couple differences.  First off, the protocols are different.  Instead of HTTP, we have TLS.  What other differences do you notice? 
     -port, encrypted application data is gibberish
 
-[tcp-stream](readme/tcp-stream.png)
+![tcp-stream](readme/tcp-stream.png)
 
 Here we have no idea what information we were sending to the server.  So even if someone had intercepted this, they wouldn't be able to do anything with it. 
 
