@@ -2,9 +2,14 @@
 
 You might have noticed that, when browsing on the internet you will occasionally see different icons to the left of the url bar.
 
-If we go to some random [blog](http://derpturkey.com/), we see an information icon with "Not secure" text.  If we click on the icon, we get some scary red text reiterating that our connection is indeed not secure. 
+If we go to some random [blog](http://derpturkey.com/), we see an information icon with "Not secure" text.
+
+![not secure](derpturkey.PNG)
+
+If we click on the icon, we get some scary red text reiterating that our connection is indeed not secure. 
 
 (image)
+![scary red text](scary-red.png)
 
  But don't unplug your computer and hide under the bed just yet.  That warning is just telling you that the website's server is using HTTP.  HTTP just means that the traffic is unencrypted and could be intercepted without any real effort (as we'll see shortly).  
 
@@ -20,6 +25,7 @@ In order to to that, we are going to use a very common networking tool called Wi
 Hopefully, after using Wireshark, you'll be just a little bit more paranoid about web security.  Let's just let it run for a minute and see what we get:
 
 (run capture)
+![HTTP capture](derpturkey-http-capture.PNG)
 
 Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, so we're going to narrow things down a bit.
 
@@ -41,7 +47,7 @@ This brings us to the so-called OSI model.  The OSI model has either 7 or 5 laye
 
 https://docs.oracle.com/cd/E19683-01/806-4075/ipov-10/index.html
 
-(image)
+![OSI](OSI.PNG)
 
 The higher the numbers go, the more abstract things get.  We spend most of our time at the very top of the OSI model, but it's not a bad idea to know a little bit about the lower layers.
 
@@ -73,7 +79,38 @@ Here you'll notice a couple differences.  First off, the protocols are different
 Here we have no idea what information we were sending to the server.  So even if someone had intercepted this, they wouldn't be able to do anything with it. 
 
 
-But how does this encryption happen?
+### Certificates
+But how does this encryption happen?  The answer it: certificates.  Let's go to a webpage that uses HTTPS.
+
+```bash
+duckduckgo.com
+```
+
+If we click on the "lock" icon to the left of the url bar, instead of scary red text, reassuring green:
+
+![valid certificate](valid-cert.png)
+
+We can continue to find out more if we click on the certificate.  The certificate actually has quite a bit of information in it.  Take a quick look.
+
+It turns out the duckduckgo.com's certificate doesn't just contain information about itself, but also information about the certificate (DigiCert SHA2 Secure Server CA) that is vouching for duckduckgo.com's certificate.
+
+And if we do the same thing with DigiCert SHA2 Secure Server CA's certificate, we find that it was issued by DigiCert Global Root CA.  
+
+Wait, so the same company, DigiCert is issuing certificates to itself?  It turns out that the entire system of credibility that undergirds encrytption on the internet is just a small group of big companies saying that they trust each other--so you can trust who they trust.  Yikes!
+
+But it seems to be working for the moment.  Those top level players are called Certificate Authorities, and all roads lead to them.
+
+The chain of certificates that starts with duckduckgo.com leads up to one of the elect Certificate Authorities, in this case DigiCert Global Root CA.  
+
+Go to you settings in Google Chrome and search for "Manage Certificates".  Eventually you should be able to see all of the certificates from the Certificate Authorities:
+
+![Root CAs](root-ca.png)
+
+Yes, you've had all these certificates the whole time.  Later on, you'll see what happens when that certificate chain has a broken link, and what you might be able to do to fix it.
+
+
+### Back to HTTPS
+Now that we know a little bit about the mechanism that enables trust on the internet, let's get back to our packets.
 
 We saw some TCP packets that preceeded either the HTTP or TLS protocols.  HTTPS adds some extra steps to the initial interaction between a client (browser) and a server. Before sending the application data (OSI layer 7), there is what is called a "TLS handshake".  The TLS handshake is when the encryption is negotiated.
 
