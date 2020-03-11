@@ -114,6 +114,8 @@ Now that we know a little bit about the mechanism that enables trust on the inte
 
 We saw some TCP packets that preceeded either the HTTP or TLS protocols.  HTTPS adds some extra steps to the initial interaction between a client (browser) and a server. Before sending the application data (OSI layer 7), there is what is called a "TLS handshake".  The TLS handshake is when the encryption is negotiated.
 
+![TLS Handshake](readme/tls_handshake.png)
+
  The end result of all these steps is an agreement between the client and the browser to use a specific encryption mechanism.  So when you send your credit card number in a form, even if someone intercepts the message (very easy to do as we'll see), there won't be anything useful for a potential attacker to steal.
 
 (Wireshark)
@@ -122,100 +124,77 @@ We are going to present a somewhat simplified overview of that negotiation.
 
 // https://www.thesslstore.com/blog/explaining-ssl-handshake/
 
-1. Exchange encryption capabilities
-2. authenticate the certificate
-3. exchange session key
+1. The Server Sends the Certificate to the Client
+2. The Client Authenticates the Certificate
+3. Negotiate Encryption
 
+#### The Server Sends the Certificate to the Client
+Before any application data is sent (i.e. the webpage), an encrypted session needs to be established between the client and the server.  The server is the responsible party here.  It is the server's duty to establish trustworthiness.  
 
+In order to do that, as we've already seen, the server sends along its certificate to establish its identity.  A certificate is basically just a filled out form that is meant to prove that the server is who it says it is.
 
-#### Exchange encryption Capabilities
+#### The Client Authenticates the Certificate
+What the server sends the client isn't just it's own certificate (called a "leaf", because it is at the end of the "branch"), but a <b>chain</b> of certificates.  The client then checks that the chain leading from the server's leaf certificate all the way up to the Certificate Authority is valid.  That Certificate Authority's root certificate is stored in your browser and/or operating system.
 
-The client must tell the server what kinds of encrytion it can handle
+It must ensure that the chain matches, the certificates are not expired, and the certificates have not been revoked.  
 
+It is worth noting here that a valid certificate only establishes the <i>identity</i> of the certificate holder, not moral uprightness.  It's like checking a salesman's driver's licence.  At least it's something.
 
-#### authenticate the certificate
+If the certificate checks out, and the client (browser) trusts that the server is who it says it is, then the client and server can agree on encryption.
 
-The server sends the client, not just it's own certificate (called a "leaf", because it is at the end of the "branch"), but a chain of certificates.  The client then checks that the chain leading from the server's leaf certificate all the way up to the Certificate Authority is valid.  It must ensure that the chain matches, the certificates are not expired, and the certificates have not been revoked.  
+The process of nejgotiating encryption is fairly complicated, so let's look at an example first.  
 
-With HTTPS, before any application data is sent, the server sends the browser its certificate.  A certificate is basically just a filled out form that is meant to prove that the server is who it says it is.  
-
-
-How does this happen?  The short answer is: certificates.
-
-HTTPS uses encryption 
-
-TLS handshake
-
-(show flow diagram)
-
-Certificate Authorities
-
-(click on certificates in the browser)
-
-
-
-The initial connection is asymmetric.  The client encrypts data using the server's public key.  Then, once the client and server agree on a session key (a symmetric key), they can have two-way encrypted communication.
-
-Let's take a short break to talk about how asymmetric keys can be used to generate symmetric keys:
 
 ## Ceasar Cipher Example
-We already know about the Ceasar Cipher.  If you want to exchange encrypted letters with someone using a Ceasar Cipher, you both need to have the same secret number.  But if you are the writer, how do you tell your reader what the secret number is?  You can't simply write in in the top corner of the letter, because anyone who intercepts the letter would be able to decode it.  There are some ways around this.  You might have a dead-drop that you both know about, where you can place the secret number.  But then how do you securely communicate about the dead-drop's location...  It seems like an infinite regression.
+Let's imagine two secret agents, Alice and Bob.  They live far away from each other, but need to communicate securely.  So they decide to encrypt their letters using a Caesar Cipher--pretty clever.  Anyone who intercepts their letters will just see gibberish.  
 
-Fortunately, there is some math thing that solves this problem for us.  In fact, it is the basis of secure communication on the internet--the "S" in HTTPS.  
+But there is a problem.
 
-Through some kind of magic, public key cryptography allows two people to share encrypted information even when the encryptor uses a publicly available key.  It sounds strange, but here is how it goes.
+If Alice want to exchange encrypted letters with Bob using a Ceasar Cipher, they both need to have the same secret key to encode/decode the letter.  But how can Alice tell Bob what the secret key is?  If she simply writes the key in the top corner of the letter, anyone who intercepts the letter will be able to decode it.  
 
-Alice and Bob want to pass secret messages to each other.  Here is what they do:
-Alice generates two very large numbers that are mathematically related, but impossible to guess
+A real conundrum, but there might be a way around it.  Alice thinks about establishing a dead-drop that she and Bob both know about, where she can write the secret key in chalk above a certain door.  But then she gets stuck trying to figure out how to securely communicate to Bob about the dead-drop's location...  She has to have secure communication to initiate secure communication.
+
+Fortunately, Alice is something of a math whiz, and she came up with a solution that works.  
+
+She explained it to me over a beer one night, but most of the details were lost on me.  It's a little hazy, but here's what I remember.
+
+Alice said that she and Bob wanted to pass secret messages to each other.  So here is what Alice came up with:
+Alice generates two very large numbers that are mathematically related, but impossible to guess.
 Alice keeps one of them to herself <b>(private key)</b>, and posts the other one publicly as her pinned Tweet<b>(public key)</b>.
 
 Bob does the same thing.  
 Bob generates two very large numbers that are mathematically related, but impossible to guess.
 Bob keeps one of them to himself <b>(private key)</b>, and posts the other one publicly as his pinned Tweet <b>(public key)</b>.
 
-When Bob wants to send a message to Alice, he encrypts his message with <i>Alice's</i> <b>(public key)</b>.  Alice then uses her <b>(private key)</b> to decrypt Bob's message.
+When Bob wants to send a message to Alice, he encrypts his message with <i>Alice's</i> <b>(public key)</b>.  Alice then uses her <b>(private key)</b> to decrypt Bob's message.  It sounded impossible to me, but I tried it out and it seems to work because the public key and the private key are mathematically related somehow.
 
 The same thing happens when Alice wants to send a message to Bob:
 When Alice wants to send a message to Bob, she encrypts her message with <i>Bob's</i> <b>(public key)</b>.  Bob then uses his <b>(private key)</b> to decrypt Alice's message.
 
+The whole thing souned crazy to me, so when I got home from the bar that night, I opened up my notebook and tried to figure out how it worked.  Since I'm not the brightest tool in the shed, I decided to use very small numbers.
 
-It sounds crazy, and it involves math that I won't bother trying to figure out, but we can build a very simple model that shows how it works using very small numbers.
+I think I figured out how Alice and Bob can use the same secret key to encrypt and decrypt their messages, even though they don't know each other's private keys.
 
-We'll use a Ceasar Cipher to show how Alice and Bob can send an receive encrypted messages without knowing the other's private key.  
+Crazy! 
 
-Here is how the keys are generated:
+To see how the symmetric key is generated from an asymmetric one, go ahead and run this command:
+
 
 ```python
-# public_key_cryptography.py
-import random
-
-class Key:
-    def __init__(self, public_key_base, public_key_modulus):
-        self.public_key_base = public_key_base
-        self.public_key_modulus = public_key_modulus
-        self.private_key = random.randint(1,100) 
-
-    def generate_public_key(self):
-        return pow(self.public_key_base, self.private_key) % self.public_key_modulus
-
-    def generate_shared_secret(self, another):
-        return pow(another, self.private_key) % self.public_key_modulus
-
-
-def return_shared_secret():
-    public_key_base = 3  
-    public_key_modulus = 23 
-    
-    alice_private_secret = Key(public_key_base, public_key_modulus)
-    bob_private_secret = Key(public_key_base, public_key_modulus)
-    shared_secret_alice = alice_private_secret.generate_shared_secret(bob_private_secret.generate_public_key())
-    shared_secret_bob = bob_private_secret.generate_shared_secret(alice_private_secret.generate_public_key())
-
-    return {
-        "shared_secret_alice": shared_secret_alice,
-        "shared_secret_bob": shared_secret_bob
-    }
+python alice_bob_message_exchange.py
 ```
+
+You can run it over and over again, and it works every time.  Here's an example:
+
+```bash
+Public key: public_key_base 3, public_key_modulus 23
+Alice's private key: 1, shared secret: 1
+Bob's private key: 6, shared secret: 1
+    Alice's original message: TheBeerRunsAtMidnight
+    Alice's encrypted message: UifCffsSvotBuNjeojhiu
+    Bob's decryption of Alice's encrypted message: TheBeerRunsAtMidnight
+```
+
 
 Feel free to let your eyes glaze over.  The point is that, through some mathmatical wizardry, both Alice and Bob end up deciding on the same number for the Ceasar Cipher.
 
@@ -223,8 +202,12 @@ If we now run alice_bob_message_exchange.py, we see that an encrypted message ca
 
 
 
+#### Negotiate Encryption
+Alice and Bob have shown us how we can use asymmetric keys, along with an agreed upon algorithm, to generate symmetric keys.
 
+The initial connection is asymmetric.  The client encrypts data using the server's public key.  Then, once the client and server agree on a session key (a symmetric key), they can have two-way encrypted communication.
 
+Through some kind of magic, public key cryptography allows two people to share encrypted information even when the encryptor uses a publicly available key.  It sounds strange, but here is how it goes.  In fact, her solution is the basis of secure communication on the internet--the "S" in HTTPS. 
 
 
 

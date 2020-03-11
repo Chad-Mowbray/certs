@@ -1,4 +1,4 @@
-def encrypt(text,s): 
+def encrypt_caesar_cipher(text,s): 
     result = "" 
   
     # traverse text 
