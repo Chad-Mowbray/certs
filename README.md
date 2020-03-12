@@ -1,6 +1,8 @@
-## Public Key Cryptography
+# HTTP and HTTPS
+Today we are going to go over what separates HTTP from HTTPS.
 
-You might have noticed that, when browsing on the internet you will occasionally see different icons to the left of the url bar.
+## Public Key Cryptography
+You might have noticed that, when browsing on the internet, you will occasionally see different icons to the left of the url bar.
 
 If we go to some random [blog](http://derpturkey.com/), we see an information icon with "Not secure" text.
 
@@ -10,42 +12,44 @@ If we click on the icon, we get some scary red text reiterating that our connect
 
 ![scary red text](readme/scary-red.png)
 
- But don't unplug your computer and hide under the bed just yet.  That warning is just telling you that the website's server is using HTTP.  HTTP just means that the traffic is unencrypted and could be intercepted without any real effort (as we'll see shortly).  
+But don't unplug your computer and hide under the bed just yet.  That warning is just telling you that the website's server is using HTTP.  HTTP just means that the traffic is unencrypted and could be intercepted without any real effort (as we'll see shortly).  
 
-In this case, I think the attempt to scare you away from derpturkey.com is a little overblown.  After all, it's just a blog.  You go there, you read the content, and then you leave.  <i>You</i> aren't sending any data, and you certainly aren't sending any sensitive date.
+In this case, I think the attempt to scare you away from derpturkey.com is a little overblown.  After all, it's just a blog.  You go there, you read the content, and then you leave.  <i>You</i> aren't sending any data, and you certainly aren't sending any sensitive date.  However, if you are going to be sending data that you wouldn't want the whole world to see, then you should encrypt your data before you send it--with HTTPS.
 
-But most browser makers take a 'better safe than sorry' approach to informing users.  However, if you are going to be sending data that you wouldn't want the whole world to see, then you should encrypt your data before you send it--with HTTPS.
+So why not just always use HTTPS?  The answer is that it makes things more complicated (and can cost more too).  In today's challenge you will be learning the difference between setting up an HTTP server and an HTTPS server.
 
-Encryption is the difference between HTTP and HTTPS.  Before we get into how all of this works, let's try intercepting some traffic from an HTTP connection and then an HTTPS connection.
+But, despite the extra hassle, browser makers would prefer that you always use HTTPS (hence the dramatic warnings). And things are heading that way.  Most major sites now use HTTPS--and the percentage is likely to continue rising.  So even if you aren't sending and receiving sensitive information, you are more likely than not, using encryption.
+
+And encryption is the real difference between HTTP and HTTPS.  Before we get into how all of this works, let's try intercepting some traffic from both an HTTP and an HTTPS connection to see what all the fuss is about.
 
 ### Introduction to Wireshark
-In order to to that, we are going to use a very common networking tool called Wireshark.  You can download it for free [here](https://www.wireshark.org/download.html).
+In order to intercept all that traffic, we are going to use a very common networking tool called Wireshark.  You can download it for free [here](https://www.wireshark.org/download.html).
 
 Hopefully, after using Wireshark, you'll be just a little bit more paranoid about web security.  Let's just let it run for a minute and see what we get:
 
 (run capture)
 
-Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, so we're going to narrow things down a bit.
+Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, so we're going to narrow things down a bit. We are only going to worry about a few of these things.  
 
-Since Wireshark can capture just about everying on your network, we are going to narrow it down.  Let's first look at derpturkey.com, a Javascript coding blog.  We'll first get the ip address
+Instead of just capturing everything, let's focus in on one particular website.  We will look at derpturkey.com, a random Javascript coding blog.  We'll first get the ip address so that we can filter our network capture:
 
 ```bash
 curl derpturkey.com -v
 ```
-If you look at the first couple lines of output, you will see derpturkey.com's ip address: 50.16.86.72.  We can use this to filter our capture:
+If you look at the first couple lines of output, you will see derpturkey.com's ip address: 50.16.86.72.  We can paste this into the filter bar:
 
 ```bash
 ip.addr == 50.16.86.72
 ```
 ![HTTP capture](readme/derpturkey-http-capture.png)
 
-Now try clicking around the webpage and see what happens.  You should see a bunch of packets start to populate your screen.  
+Now try clicking around the webpage and and watch what happens in the Wireshark window.  You should see clumps of packets start to populate your screen.  
 
-If you look at the "protocol" columnn, you will notice that some are TCP and others are HTTP.  If you double-click on one of the packets, you'll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  
+If you look at the "protocol" columnn, you will notice that some are TCP and others are HTTP--and that TCP preceeds HTTP.  If you double-click on one of the packets, you'll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  
 
-This brings us to the so-called "OSI model". The OSI (Open Systems Interconnection) model is an abstraction that is used to understand the different layers in a network-- all the way from wires to cat pictures.
+These layers bring us to the so-called "OSI model". The OSI (Open Systems Interconnection) model is an abstraction that is used to understand the different layers in a network-- all the way from wires to cat pictures.
 
-The OSI model has either 7 or 5 layers, depending on who you ask (5,6,and 7 are taken together).  But for our purposes, 5 is fine.  
+The OSI model has either 7 or 5 layers, depending on who you ask (5,6,and 7 are sometimes taken together).  And for our purposes, 5 is fine.  
 
 
 ![osi](readme/tcp-ip-stack.png)
@@ -59,25 +63,24 @@ Wireshark gives a good illustration of the 5-layer OSI model:
 
 ![wireshark-osi](readme/http-wireshark.png)
 
-Datalink (Ethernet II)
-Network (Internet Protocol Version 4)
-Transport (Transmission Control Protocol)
-Application (Hypertext Transfer Protocol)
+2. Datalink (Ethernet II)
+3. Network (Internet Protocol Version 4)
+4. Transport (Transmission Control Protocol)
+5. Application (Hypertext Transfer Protocol)
 
-
-We already know a little something about the Network layer (IP), and we'll be playing around with the Transport layer too (TCP)
+We already know a little something about the Network layer (IP)--it's where we got our address (50.16.86.72), and we'll be playing around with the Transport layer too (TCP)
 
 Feel free to click around, but for now we only care about the Application layer.  
 
 If you expand the Hypertext Transfer Protocol line, you should see some familiar faces.  The kind of request (GET), the different headers, and so on.
 
-In the bottom window we have the raw bytes on the left and the slightly-easier-to-read utf-8 encoding on the right.  These are the chunks that make up the flow of the internet.
+In the bottom window we have the raw bytes on the left, and the slightly-easier-to-read utf-8 encoding on the right.  These are the chunks that make up the flow of the internet.
 
 Wireshark also allows us to take a look at an entire conversation.  Choose a packet, right-click it, then follow, then HTTP stream.  You should see the whole conversation laid out for you.  
 
 ![http-conversation](readme/http-conversation.png)
 
-This packet capture represents the detailed history of our internet browsing.  It's a good thing we didn't send anything important over the wire!
+This packet capture represents the detailed history of our internet session.  It's a good thing we didn't send anything important over the wire!
 
 Now let's do the same with with a server that uses HTTPS:
 
@@ -94,43 +97,47 @@ ip.addr == 107.20.240.232
 ```
 ![tcp-tls](readme/tcp-tls.png)
 
-Here you'll notice a couple differences.  First off, the protocols are different.  Instead of HTTP, we have TLS.  What other differences do you notice? 
+Here you'll notice a couple differences.  First off, the protocols are different.  Instead of HTTP, we have TLS, which you can think of as encrypted HTTP or HTTPS.  What other differences do you notice? 
     -port, encrypted application data is gibberish
 
 ![tcp-stream](readme/tcp-stream.png)
 
-Here we have no idea what information we were sending to the server.  So even if someone had intercepted this, they wouldn't be able to do anything with it. 
-
+Here we have no idea what information we were sending to the server.  So even if someone had intercepted this, they wouldn't be able to do anything with it. If I were giving someone my credit card information, this is how I'd want to do it.
 
 ### Certificates
-But how does this encryption happen?  The answer it: certificates.  Let's go to a webpage that uses HTTPS.
+OK, so now we know that HTTP is unencrypted and HTTPS is encrypted.  But how does this encryption happen?  The long answer is long, but the short answer is: certificates.  
+
+It's pretty easy to get your hand on a certificate--at least to look at.  Just go to any page that uses HTTPS:
 
 ```bash
 duckduckgo.com
 ```
 
-If we click on the "lock" icon to the left of the url bar, instead of scary red text, reassuring green:
+If we click on the "lock" icon to the left of the url bar, instead of being jolted by scary red text, we are soothed with a reassuring green:
 
 ![valid certificate](readme/valid-cert.png)
 
-We can continue to find out more if we click on the certificate.  The certificate actually has quite a bit of information in it.  Take a quick look.
+We can continue to find out more if we click on the certificate. The certificate actually has quite a bit of information in it. Take a quick look, but don't bother trying to understand everything now.
+
+Why does it look like duckduckgo.com has three certificates?
 
 It turns out the duckduckgo.com's certificate doesn't just contain information about itself, but also information about the certificate (DigiCert SHA2 Secure Server CA) that is vouching for duckduckgo.com's certificate.
 
 And if we do the same thing with DigiCert SHA2 Secure Server CA's certificate, we find that it was issued by DigiCert Global Root CA.  
 
-Wait, so the same company, DigiCert is issuing certificates to itself?  It turns out that the entire system of credibility that undergirds encrytption on the internet is just a small group of big companies saying that they trust each other--so you can trust who they trust.  Yikes!
+Wait, so the same company, DigiCert is issuing certificates to itself?  There's actually a good reason for that.  You'll learn more when you do today's challenges.  It turns out that the entire system of credibility that undergirds encrytption on the internet is just a small group of big companies saying that they trust each other--so you can trust who they trust.  Yikes!
 
 But it seems to be working for the moment.  Those top level players are called Certificate Authorities, and all roads lead to them.
 
 The chain of certificates that starts with duckduckgo.com leads up to one of the elect Certificate Authorities, in this case DigiCert Global Root CA.  
 
-Go to you settings in Google Chrome and search for "Manage Certificates".  Eventually you should be able to see all of the certificates from the Certificate Authorities:
+So why should I trust DigiCert Global Root CA, I've never even heard of them?
+
+It turns out that you don't have to, because your browser or operating system trusts them for you. Go to you settings in Google Chrome and search for "Manage Certificates".  Eventually you should be able to see all of the certificates from the Certificate Authorities:
 
 ![Root CAs](readme/root-ca.png)
 
 Yes, you've had all these certificates the whole time.  Later on, you'll see what happens when that certificate chain has a broken link, and what you might be able to do to fix it.
-
 
 ### Back to HTTPS
 Now that we know a little bit about the mechanism that enables trust on the internet, let's get back to our packets.
@@ -139,11 +146,10 @@ We saw some TCP packets that preceeded either the HTTP or TLS protocols.  HTTPS 
 
 ![TLS Handshake](readme/tls_handshake.png)
 
- The end result of all these steps is an agreement between the client and the browser to use a specific encryption mechanism.  So when you send your credit card number in a form, even if someone intercepts the message (very easy to do as we'll see), there won't be anything useful for a potential attacker to steal.
+The end result of all these steps is an agreement between the client and the browser to use a specific encryption mechanism.  So when you send your credit card number in a form, even if someone intercepts the message (very easy to do  we've seen), there won't be anything useful for a potential attacker to steal.
 
-(Wireshark)
-
-We are going to present a somewhat simplified overview of that negotiation.
+#### The TLS Handshake
+We are going to present a somewhat simplified overview of that negotiation--called the TLS handshake.
 
 // https://www.thesslstore.com/blog/explaining-ssl-handshake/
 
@@ -157,7 +163,7 @@ Before any application data is sent (i.e. the webpage), an encrypted session nee
 In order to do that, as we've already seen, the server sends along its certificate to establish its identity.  A certificate is basically just a filled out form that is meant to prove that the server is who it says it is.
 
 #### The Client Authenticates the Certificate
-What the server sends the client isn't just it's own certificate (called a "leaf", because it is at the end of the "branch"), but a <b>chain</b> of certificates.  The client then checks that the chain leading from the server's leaf certificate all the way up to the Certificate Authority is valid.  That Certificate Authority's root certificate is stored in your browser and/or operating system.
+As we've seen, what the server sends the client isn't just it's own certificate (called a "leaf", because it is at the end of the "branch"), but a <b>chain</b> of certificates.  The client then checks that the chain leading from the server's leaf certificate all the way up to the Certificate Authority is valid.  That Certificate Authority's root certificate is stored in your browser and/or operating system.
 
 It must ensure that the chain matches, the certificates are not expired, and the certificates have not been revoked.  
 
@@ -165,8 +171,7 @@ It is worth noting here that a valid certificate only establishes the <i>identit
 
 If the certificate checks out, and the client (browser) trusts that the server is who it says it is, then the client and server can agree on encryption.
 
-The process of nejgotiating encryption is fairly complicated, so let's look at an example first.  
-
+The process of negotiating encryption is fairly complicated, so let's look at a simplified example.  
 
 ## Ceasar Cipher Example
 Let's imagine two secret agents, Alice and Bob.  They live far away from each other, but need to communicate securely.  So they decide to encrypt their letters using a Caesar Cipher--pretty clever.  Anyone who intercepts their letters will just see gibberish.  
@@ -226,7 +231,17 @@ If we now run alice_bob_message_exchange.py, we see that an encrypted message ca
 
 
 #### Negotiate Encryption
-Alice and Bob have shown us how we can use asymmetric keys, along with an agreed upon algorithm, to generate symmetric keys.
+What Alice discovered is called Public Key Cryptography. It is a system that allowed her and Bob to bootstrap secure communication.
+HTTPS uses asymmetric keys, along with an agreed upon algorithm, to generate symmetric keys.
+
+In fact there is a command line utility that allows us to generate certificates all day long.  Try it!
+
+```bash
+openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+```
+
+You've just generated a public key and a private key that can be used to encrypt communication.  The problem is that this is a "self-signed" certificate--outside the web of trust spun by the Certificate Authorities.  It still works though.
+
 
 The initial connection is asymmetric.  The client encrypts data using the server's public key.  Then, once the client and server agree on a session key (a symmetric key), they can have two-way encrypted communication.
 
