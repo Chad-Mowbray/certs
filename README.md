@@ -16,9 +16,9 @@ But don't unplug your computer and hide under the bed just yet.  That warning is
 
 In this case, I think the attempt to scare you away from derpturkey.com is a little overblown.  After all, it's just a blog.  You go there, you read the content, and then you leave.  <i>You</i> aren't sending any data, and you certainly aren't sending any sensitive date.  However, if you are going to be sending data that you wouldn't want the whole world to see, then you should encrypt your data before you send it--with HTTPS.
 
-So why not just always use HTTPS?  The answer is that it makes things more complicated (and can cost more too).  In today's challenge you will be learning the difference between setting up an HTTP server and an HTTPS server.
+So why not just always use HTTPS?  Well, some people think that you <i>should</i> always use HTTPS. But it does make things more complicated.  After today's challenges you'll be better placed to make a thoughtful decision based on your use case.
 
-But, despite the extra hassle, browser makers would prefer that you always use HTTPS (hence the dramatic warnings). And things are heading that way.  Most major sites now use HTTPS--and the percentage is likely to continue rising.  So even if you aren't sending and receiving sensitive information, you are more likely than not, using encryption.
+Browser makers are among those who would prefer that you always use HTTPS (hence the dramatic warnings). And things are trending in that direction anyway.  Most major sites now use HTTPS--and the percentage is likely to continue rising.  So even if you aren't sending and receiving sensitive information, you are more likely than not, using encryption.
 
 And encryption is the real difference between HTTP and HTTPS.  Before we get into how all of this works, let's try intercepting some traffic from both an HTTP and an HTTPS connection to see what all the fuss is about.
 
@@ -29,9 +29,9 @@ Hopefully, after using Wireshark, you'll be just a little bit more paranoid abou
 
 (run capture)
 
-Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, so we're going to narrow things down a bit. We are only going to worry about a few of these things.  
+Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, but we don't worry.  We're going to walk through a few important points.
 
-Instead of just capturing everything, let's focus in on one particular website.  We will look at derpturkey.com, a random Javascript coding blog.  We'll first get the ip address so that we can filter our network capture:
+Instead of just capturing everything, let's focus in on one particular website using a filter.  We will look at derpturkey.com, a random Javascript coding blog.  We'll first get the ip address so that we can filter our network capture:
 
 ```bash
 curl derpturkey.com -v
@@ -49,7 +49,7 @@ If you look at the "protocol" columnn, you will notice that some are TCP and oth
 
 These layers bring us to the so-called "OSI model". The OSI (Open Systems Interconnection) model is an abstraction that is used to understand the different layers in a network-- all the way from wires to cat pictures.
 
-The OSI model has either 7 or 5 layers, depending on who you ask (5,6,and 7 are sometimes taken together).  And for our purposes, 5 is fine.  
+The OSI model has either 7 or 5 layers, depending on who you ask (5,6,and 7 are sometimes collapsed together).  And for our purposes, 5 is fine.  
 
 
 ![osi](readme/tcp-ip-stack.png)
@@ -249,7 +249,6 @@ Through some kind of magic, public key cryptography allows two people to share e
 
 
 
-
 ## Challenges
 
 #### Wireshark
@@ -258,9 +257,43 @@ Through some kind of magic, public key cryptography allows two people to share e
     -observing the wire (authentication) http://www-net.cs.umass.edu/wireshark-labs/Wireshark_HTTP_v7.0.pdf       http://gaia.cs.umass.edu/wireshark-labs/protected_pages/HTTP-wireshark-file5.html
         -we will learn more about base64 encoding when we talk about JSON Web Tokens
 
+Note: This exercise works best if you use an incognito window
+
+We're going to borrow an exercise from a UMass computer science class to show you the dangers of sending sensitive information over unencrypted HTTP.  Go ahead and start up a Wireshark capture.
+
+Then, go to the following site: http://gaia.cs.umass.edu/wireshark-labs/protected_pages/HTTP-wireshark-file5.html.  There you can enter the following credentials:
+    username: wireshark-students
+    password: network
+
+![wireshark-ex1](readme/wireshark-ex1.png)
+
+You should see the TCP and HTTP packets.  Take a look at them.  Can you find your credentials anywhere in the Hypertext Transfer Protocol?
+
+It might take you a minute, since they don't look quite the way you'd expect.  You might even think they were encrypted... But hold on, didn't I just tell you that you were sending your credentials unencrypted over HTTP?  Well it turns out that your credentials aren't actually encrypted--they're just <i>encoded</i>.  Do some searching, find out what encoding is used, and then decode your credentials.  What do you see?
+
 
 
 #### Create HTTPS Server
+##### Part I
+The first challenge showed you first hand what can happen when you send credentials in the clear.  Instead of just complaining about the problem, we should fix it.
+
+We are going to create a simple server that allows people to submit a username and password, just like in the Wireshark exercise.  The server has already been started, but you need to add the POST endpoint and display a message of some kind.
+
+Once you get that going, you can test out your wire sniffing skills (on loopback) yet again to make sure that you see where the credentials are going.
+
+##### Part II
+Note: For this one you need to tell Chrome to relax.  chrome://flags/#allow-insecure-localhost
+
+So far so good.  Now we are going to fix things.  Instead of an HTTP server, we are going to make an HTTPS server.  In order to do that you'll need to get yourself a certificate (a public/private key pair).  I think there was a command for doing just that somewhere in the lesson.
+
+Once you get it working, unleash your wire sniffer and see if you can capture the credentials.  
+
+
+
+
+
+
+
     -Create server
     -Add HTTPS
     -Make your browser trust the cert
