@@ -251,3 +251,9 @@ Through some kind of magic, public key cryptography allows two people to share e
     -Make your browser trust the cert
     -Create a certificate chain
     https://engineering.circle.com/https-authorized-certs-with-node-js-315e548354a2
+    -run a wireshark capture on the loopback, before and after
+
+    chrome://flags/#allow-insecure-localhost
+
+
+1. You have the outline of a simple node server.  Right now it can handle GET requests ...

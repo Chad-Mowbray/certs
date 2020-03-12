@@ -1,33 +1,81 @@
-//using just node
+//starting point
 
-const https = require('https');
-const fs = require('fs');
+// const express = require('express')
+// const http = require('http')
 
-const options = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem')
-};
+// const app = express()
 
-https.createServer(options, function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.write('Hello World!');
-  res.end();
-}).listen(8000);
+// app.use(express.static('public'))
+
+// app.get('/', function (req, res) {
+//   res.render("index.html")
+// })
+
+// http.createServer(app)
+// .listen(3333, function () {
+//   console.log('Listening on localhost:3333...')
+// })
 
 
-// var express = require('express')
-// var fs = require('fs')
-// var https = require('https')
-// var app = express()
+
+
+
+
+// http server with password submit
+
+// const express = require('express')
+// const http = require('http')
+
+// const app = express()
+
+// app.use(express.static('public'))
+
+
+// app.get('/', function (req, res) {
+//   res.render("index.html")
+// })
+
+// app.post("/login", function(req, res) {
+//   res.send("Thank you for submitting your password")
+// })
+
+
+// http.createServer(app)
+// .listen(3000, function () {
+//   console.log('Example app listening on port 3000! Go to https://localhost:3000/')
+// })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// the https version:
+
+// const express = require('express')
+// const fs = require('fs')
+// const https = require('https')
+// const app = express()
 
 // app.get('/', function (req, res) {
 //   res.send('hello world')
 // })
 
-// https.createServer({
+// const options = {
 //   key: fs.readFileSync('key.pem'),
 //   cert: fs.readFileSync('cert.pem')
-// }, app)
+// };
+
+// https.createServer(options, app)
 // .listen(3000, function () {
 //   console.log('Example app listening on port 3000! Go to https://localhost:3000/')
 // })
