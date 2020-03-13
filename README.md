@@ -269,11 +269,11 @@ There you can enter the following credentials:
 
 You should see the TCP and HTTP packets.  Take a look at them.  Can you find your credentials anywhere in the Hypertext Transfer Protocol?
 
-### <span style="color: red;">Solution: Authorization: Basic d2lyZXNoYXJrLXN0dWRlbnRzOm5ldHdvcms=</span> 
+<span style="color: red;">Solution: Authorization: Basic d2lyZXNoYXJrLXN0dWRlbnRzOm5ldHdvcms=</span> 
 
 It might take you a minute, since they don't look quite the way you'd expect.  You might even think they were encrypted... But hold on, didn't I just tell you that you were sending your credentials unencrypted over HTTP?  Well it turns out that your credentials aren't actually encrypted--they're just <i>encoded</i>.  Do some searching, find out what encoding is used, and then decode your credentials.  What do you see?
 
-### <span style="color: red;">Solution: base64 encoding, wireshark-students:network</span> 
+<span style="color: red;">Solution: base64 encoding, wireshark-students:network</span> 
 
 #### Create HTTPS Server
 ##### Part I
@@ -283,6 +283,7 @@ We are going to create a simple server that allows people to submit a username a
 
 Once you get that going, you can test out your wire sniffing skills (on loopback) yet again to make sure that you see where the credentials are going.
 
+<span style="color: red;">Solution:</span> 
 ![password](readme/password-ex1.png)
 
 ##### Part II
@@ -292,24 +293,19 @@ So far so good.  Now we are going to fix things.  Instead of an HTTP server, we 
 
 Once you get it working, unleash your wire sniffer and see if you can capture the credentials.  
 
+<span style="color: red;">Solution:</span> 
+![password-tls](readme/wireshark-ex3.png)
+
 
 ##### Bonus
-Make a certificate chain
+1. Your browser still doesn't trust your certificate.  Can you make it?
+
+<span style="color: red;">Solution:</span> 
+(add to Trusted Root Certification Authorities store)
+
+2. Imagne yourself as the newest Certificate Authority.  You wouldn't want to directly sign a website's certificate.  If anything went wrong you might invalidate your root certificate.  To mitigate your risk, create an intermediate certificate that can do the dirty work of signing a website's certificate.
+
+<span style="color: red;">Solution:</span> 
+https://raymii.org/s/tutorials/OpenSSL_command_line_Root_and_Intermediate_CA_including_OCSP_CRL%20and_revocation.html
 
 
-
-
-
-
-
-    -Create server
-    -Add HTTPS
-    -Make your browser trust the cert
-    -Create a certificate chain
-    https://engineering.circle.com/https-authorized-certs-with-node-js-315e548354a2
-    -run a wireshark capture on the loopback, before and after
-
-    chrome://flags/#allow-insecure-localhost
-
-
-1. You have the outline of a simple node server.  Right now it can handle GET requests ...

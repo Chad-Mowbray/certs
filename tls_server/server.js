@@ -61,24 +61,31 @@
 
 // the https version:
 
-// const express = require('express')
-// const fs = require('fs')
-// const https = require('https')
-// const app = express()
+const express = require('express')
+const fs = require('fs')
+const https = require('https')
+const app = express()
 
-// app.get('/', function (req, res) {
-//   res.send('hello world')
-// })
+app.use(express.static('public'))
 
-// const options = {
-//   key: fs.readFileSync('certificates/key.pem'),
-//   cert: fs.readFileSync('certificates/cert.pem')
-// };
 
-// https.createServer(options, app)
-// .listen(3333, function () {
-//   console.log('Listening on HTTPS at https://localhost:3333/')
-// })
+app.get('/', function (req, res) {
+  res.render("index.html")
+})
+
+app.post("/login", function(req, res) {
+  res.send("Thank you for submitting your password")
+})
+
+const options = {
+  key: fs.readFileSync('certificates/key.pem'),
+  cert: fs.readFileSync('certificates/cert.pem')
+};
+
+https.createServer(options, app)
+.listen(3333, function () {
+  console.log('Listening on HTTPS at https://localhost:3333/')
+})
 
 
 
