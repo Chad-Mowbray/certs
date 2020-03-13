@@ -283,6 +283,8 @@ We are going to create a simple server that allows people to submit a username a
 
 Once you get that going, you can test out your wire sniffing skills (on loopback) yet again to make sure that you see where the credentials are going.
 
+![password](readme/password-ex1.png)
+
 ##### Part II
 <b>Note: For this one you need to tell Chrome to relax.  chrome://flags/#allow-insecure-localhost</b>
 

@@ -41,8 +41,8 @@
 
 
 // http.createServer(app)
-// .listen(3000, function () {
-//   console.log('Example app listening on port 3000! Go to https://localhost:3000/')
+// .listen(3333, function () {
+//   console.log('Listening on localhost:3333...')
 // })
 
 
@@ -71,13 +71,13 @@
 // })
 
 // const options = {
-//   key: fs.readFileSync('key.pem'),
-//   cert: fs.readFileSync('cert.pem')
+//   key: fs.readFileSync('certificates/key.pem'),
+//   cert: fs.readFileSync('certificates/cert.pem')
 // };
 
 // https.createServer(options, app)
-// .listen(3000, function () {
-//   console.log('Example app listening on port 3000! Go to https://localhost:3000/')
+// .listen(3333, function () {
+//   console.log('Listening on HTTPS at https://localhost:3333/')
 // })
 
 
