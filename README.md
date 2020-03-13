@@ -1,5 +1,5 @@
-# HTTP and HTTPS
-Today we are going to go over what separates HTTP from HTTPS.
+# HTTPS, Certificates, and Packet Sniffing
+Today we are going to go over what separates HTTP from HTTPS and why you should care.
 
 ## Public Key Cryptography
 You might have noticed that, when browsing on the internet, you will occasionally see different icons to the left of the url bar.
@@ -16,7 +16,7 @@ But don't unplug your computer and hide under the bed just yet.  That warning is
 
 In this case, I think the attempt to scare you away from derpturkey.com is a little overblown.  After all, it's just a blog.  You go there, you read the content, and then you leave.  <i>You</i> aren't sending any data, and you certainly aren't sending any sensitive date.  However, if you are going to be sending data that you wouldn't want the whole world to see, then you should encrypt your data before you send it--with HTTPS.
 
-So why not just always use HTTPS?  Well, some people think that you <i>should</i> always use HTTPS. But it does make things more complicated.  After today's challenges you'll be better placed to make a thoughtful decision based on your use case.
+So why not just always use HTTPS?  Well, some people think that you <i>should</i> always use HTTPS. But it does make things more complicated.  Is it worth the trouble for derpturkey.com?  After today's challenges you'll be better placed to weigh the pros and cons based on the use case.
 
 Browser makers are among those who would prefer that you always use HTTPS (hence the dramatic warnings). And things are trending in that direction anyway.  Most major sites now use HTTPS--and the percentage is likely to continue rising.  So even if you aren't sending and receiving sensitive information, you are more likely than not, using encryption.
 
@@ -251,27 +251,29 @@ Through some kind of magic, public key cryptography allows two people to share e
 
 ## Challenges
 
-#### Wireshark
-
-    -DNS packet analysis
-    -observing the wire (authentication) http://www-net.cs.umass.edu/wireshark-labs/Wireshark_HTTP_v7.0.pdf       http://gaia.cs.umass.edu/wireshark-labs/protected_pages/HTTP-wireshark-file5.html
-        -we will learn more about base64 encoding when we talk about JSON Web Tokens
-
-Note: This exercise works best if you use an incognito window
+#### Wireshark--Password Sniffing
+<b>Note: This exercise works best if you use an incognito window</b>
 
 We're going to borrow an exercise from a UMass computer science class to show you the dangers of sending sensitive information over unencrypted HTTP.  Go ahead and start up a Wireshark capture.
 
-Then, go to the following site: http://gaia.cs.umass.edu/wireshark-labs/protected_pages/HTTP-wireshark-file5.html.  There you can enter the following credentials:
-    username: wireshark-students
-    password: network
+Then, go to the following site: 
+
+http://gaia.cs.umass.edu/wireshark-labs/protected_pages/HTTP-wireshark-file5.html
+
+There you can enter the following credentials:
+
+&nbsp;&nbsp;&nbsp;&nbsp;username: wireshark-students<br>
+&nbsp;&nbsp;&nbsp;&nbsp;password: network
 
 ![wireshark-ex1](readme/wireshark-ex1.png)
 
 You should see the TCP and HTTP packets.  Take a look at them.  Can you find your credentials anywhere in the Hypertext Transfer Protocol?
 
+### <span style="color: red;">Solution: Authorization: Basic d2lyZXNoYXJrLXN0dWRlbnRzOm5ldHdvcms=</span> 
+
 It might take you a minute, since they don't look quite the way you'd expect.  You might even think they were encrypted... But hold on, didn't I just tell you that you were sending your credentials unencrypted over HTTP?  Well it turns out that your credentials aren't actually encrypted--they're just <i>encoded</i>.  Do some searching, find out what encoding is used, and then decode your credentials.  What do you see?
 
-
+### <span style="color: red;">Solution: base64 encoding, wireshark-students:network</span> 
 
 #### Create HTTPS Server
 ##### Part I
@@ -282,7 +284,7 @@ We are going to create a simple server that allows people to submit a username a
 Once you get that going, you can test out your wire sniffing skills (on loopback) yet again to make sure that you see where the credentials are going.
 
 ##### Part II
-Note: For this one you need to tell Chrome to relax.  chrome://flags/#allow-insecure-localhost
+<b>Note: For this one you need to tell Chrome to relax.  chrome://flags/#allow-insecure-localhost</b>
 
 So far so good.  Now we are going to fix things.  Instead of an HTTP server, we are going to make an HTTPS server.  In order to do that you'll need to get yourself a certificate (a public/private key pair).  I think there was a command for doing just that somewhere in the lesson.
 
