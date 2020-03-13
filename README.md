@@ -51,11 +51,7 @@ These layers bring us to the so-called "OSI model". The OSI (Open Systems Interc
 
 The OSI model has either 7 or 5 layers, depending on who you ask (5,6,and 7 are sometimes collapsed together).  And for our purposes, 5 is fine.  
 
-
 ![osi](readme/tcp-ip-stack.png)
-<!-- https://docs.oracle.com/cd/E19683-01/806-4075/ipov-10/index.html
-
-![OSI](readme/OSI.PNG) -->
 
 The higher the numbers go, the more abstract things get.  We spend most of our time at the very top of the OSI model, but it's not a bad idea to know a little bit about the lower layers.
 
@@ -151,8 +147,6 @@ The end result of all these steps is an agreement between the client and the bro
 #### The TLS Handshake
 We are going to present a somewhat simplified overview of that negotiation--called the TLS handshake.
 
-// https://www.thesslstore.com/blog/explaining-ssl-handshake/
-
 1. The Server Sends the Certificate to the Client
 2. The Client Authenticates the Certificate
 3. Negotiate Encryption
@@ -205,7 +199,7 @@ I think I figured out how Alice and Bob can use the same secret key to encrypt a
 
 Crazy! 
 
-To see how the symmetric key is generated from an asymmetric one, go ahead and run this command:
+To see how the symmetric key is generated from an asymmetric one, go ahead and run this command from the bob_alice folder:
 
 
 ```python
@@ -242,16 +236,14 @@ openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out c
 
 You've just generated a public key and a private key that can be used to encrypt communication.  The problem is that this is a "self-signed" certificate--outside the web of trust spun by the Certificate Authorities.  It still works though.
 
-
 The initial connection is asymmetric.  The client encrypts data using the server's public key.  Then, once the client and server agree on a session key (a symmetric key), they can have two-way encrypted communication.
 
 Through some kind of magic, public key cryptography allows two people to share encrypted information even when the encryptor uses a publicly available key.  It sounds strange, but here is how it goes.  In fact, her solution is the basis of secure communication on the internet--the "S" in HTTPS. 
 
 
-
 ## Challenges
 
-#### Wireshark--Password Sniffing
+### Wireshark--Password Sniffing
 <b>Note: This exercise works best if you use an incognito window</b>
 
 We're going to borrow an exercise from a UMass computer science class to show you the dangers of sending sensitive information over unencrypted HTTP.  Go ahead and start up a Wireshark capture.
@@ -275,7 +267,7 @@ It might take you a minute, since they don't look quite the way you'd expect.  Y
 
 <span style="color: red;">Solution: base64 encoding, wireshark-students:network</span> 
 
-#### Create HTTPS Server
+### Create an HTTPS Server
 ##### Part I
 The first challenge showed you first hand what can happen when you send credentials in the clear.  Instead of just complaining about the problem, we should fix it.
 
@@ -297,7 +289,7 @@ Once you get it working, unleash your wire sniffer and see if you can capture th
 ![password-tls](readme/wireshark-ex3.png)
 
 
-##### Bonus
+### Bonus
 1. Your browser still doesn't trust your certificate.  Can you make it?
 
 <span style="color: red;">Solution:</span> 
