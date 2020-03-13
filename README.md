@@ -289,6 +289,10 @@ So far so good.  Now we are going to fix things.  Instead of an HTTP server, we 
 Once you get it working, unleash your wire sniffer and see if you can capture the credentials.  
 
 
+##### Bonus
+Make a certificate chain
+
+
 
 
 
