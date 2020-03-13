@@ -1,5 +1,5 @@
 # HTTPS, Certificates, and Packet Sniffing
-Today we are going to go over what separates HTTP from HTTPS and why you should care.
+Today you are going to see for yourself what separates HTTP from HTTPS.
 
 ## Public Key Cryptography
 You might have noticed that, when browsing on the internet, you will occasionally see different icons to the left of the url bar.
@@ -14,7 +14,7 @@ If we click on the icon, we get some scary red text reiterating that our connect
 
 But don't unplug your computer and hide under the bed just yet.  That warning is just telling you that the website's server is using HTTP.  HTTP just means that the traffic is unencrypted and could be intercepted without any real effort (as we'll see shortly).  
 
-In this case, I think the attempt to scare you away from derpturkey.com is a little overblown.  After all, it's just a blog.  You go there, you read the content, and then you leave.  <i>You</i> aren't sending any data, and you certainly aren't sending any sensitive date.  However, if you are going to be sending data that you wouldn't want the whole world to see, then you should encrypt your data before you send it--with HTTPS.
+In this case, I think the attempt to scare you away from derpturkey.com is a little overblown.  After all, it's just a blog.  You go there, you read the content, and then you leave.  <i>You</i> aren't sending any data, and you certainly aren't sending any sensitive data--at least not on purpose.  However, if you are going to be sending data that you wouldn't want the whole world to see, then you should encrypt your data before you send it--with HTTPS.
 
 So why not just always use HTTPS?  Well, some people think that you <i>should</i> always use HTTPS. But it does make things more complicated.  Is it worth the trouble for derpturkey.com?  After today's challenges you'll be better placed to weigh the pros and cons based on the use case.
 
@@ -23,7 +23,7 @@ Browser makers are among those who would prefer that you always use HTTPS (hence
 And encryption is the real difference between HTTP and HTTPS.  Before we get into how all of this works, let's try intercepting some traffic from both an HTTP and an HTTPS connection to see what all the fuss is about.
 
 ### Introduction to Wireshark
-In order to intercept all that traffic, we are going to use a very common networking tool called Wireshark.  You can download it for free [here](https://www.wireshark.org/download.html).
+In order to intercept all that traffic, we are going to use a very common networking tool called Wireshark.  You can download Wireshark for free [here](https://www.wireshark.org/download.html).
 
 Hopefully, after using Wireshark, you'll be just a little bit more paranoid about web security.  Let's just let it run for a minute and see what we get:
 
@@ -53,7 +53,7 @@ The OSI model has either 7 or 5 layers, depending on who you ask (5,6,and 7 are 
 
 ![osi](readme/tcp-ip-stack.png)
 
-The higher the numbers go, the more abstract things get.  We spend most of our time at the very top of the OSI model, but it's not a bad idea to know a little bit about the lower layers.
+The higher the numbers go, the further we get from wires and switches.  We spend most of our time at the very top of the OSI model, but it's not a bad idea to know a little bit about the lower layers.
 
 Wireshark gives a good illustration of the 5-layer OSI model:
 
@@ -151,12 +151,12 @@ We are going to present a somewhat simplified overview of that negotiation--call
 2. The Client Authenticates the Certificate
 3. Negotiate Encryption
 
-#### The Server Sends the Certificate to the Client
+##### The Server Sends the Certificate to the Client
 Before any application data is sent (i.e. the webpage), an encrypted session needs to be established between the client and the server.  The server is the responsible party here.  It is the server's duty to establish trustworthiness.  
 
 In order to do that, as we've already seen, the server sends along its certificate to establish its identity.  A certificate is basically just a filled out form that is meant to prove that the server is who it says it is.
 
-#### The Client Authenticates the Certificate
+##### The Client Authenticates the Certificate
 As we've seen, what the server sends the client isn't just it's own certificate (called a "leaf", because it is at the end of the "branch"), but a <b>chain</b> of certificates.  The client then checks that the chain leading from the server's leaf certificate all the way up to the Certificate Authority is valid.  That Certificate Authority's root certificate is stored in your browser and/or operating system.
 
 It must ensure that the chain matches, the certificates are not expired, and the certificates have not been revoked.  
@@ -261,11 +261,11 @@ There you can enter the following credentials:
 
 You should see the TCP and HTTP packets.  Take a look at them.  Can you find your credentials anywhere in the Hypertext Transfer Protocol?
 
-<span style="color: red;">Solution: Authorization: Basic d2lyZXNoYXJrLXN0dWRlbnRzOm5ldHdvcms=</span> 
+##### <span style="color: red;">Solution: Authorization: Basic d2lyZXNoYXJrLXN0dWRlbnRzOm5ldHdvcms=</span> 
 
 It might take you a minute, since they don't look quite the way you'd expect.  You might even think they were encrypted... But hold on, didn't I just tell you that you were sending your credentials unencrypted over HTTP?  Well it turns out that your credentials aren't actually encrypted--they're just <i>encoded</i>.  Do some searching, find out what encoding is used, and then decode your credentials.  What do you see?
 
-<span style="color: red;">Solution: base64 encoding, wireshark-students:network</span> 
+##### <span style="color: red;">Solution: base64 encoding, wireshark-students:network</span> 
 
 ### Create an HTTPS Server
 ##### Part I
@@ -275,7 +275,7 @@ We are going to create a simple server that allows people to submit a username a
 
 Once you get that going, you can test out your wire sniffing skills (on loopback) yet again to make sure that you see where the credentials are going.
 
-<span style="color: red;">Solution:</span> 
+##### <span style="color: red;">Solution:</span> 
 ![password](readme/password-ex1.png)
 
 ##### Part II
@@ -285,19 +285,19 @@ So far so good.  Now we are going to fix things.  Instead of an HTTP server, we 
 
 Once you get it working, unleash your wire sniffer and see if you can capture the credentials.  
 
-<span style="color: red;">Solution:</span> 
+##### <span style="color: red;">Solution:</span> 
 ![password-tls](readme/wireshark-ex3.png)
 
 
 ### Bonus
 1. Your browser still doesn't trust your certificate.  Can you make it?
 
-<span style="color: red;">Solution:</span> 
+##### <span style="color: red;">Solution:</span> 
 (add to Trusted Root Certification Authorities store)
 
 2. Imagne yourself as the newest Certificate Authority.  You wouldn't want to directly sign a website's certificate.  If anything went wrong you might invalidate your root certificate.  To mitigate your risk, create an intermediate certificate that can do the dirty work of signing a website's certificate.
 
-<span style="color: red;">Solution:</span> 
+##### <span style="color: red;">Solution:</span> 
 https://raymii.org/s/tutorials/OpenSSL_command_line_Root_and_Intermediate_CA_including_OCSP_CRL%20and_revocation.html
 
 
