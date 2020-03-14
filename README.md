@@ -45,7 +45,7 @@ ip.addr == 50.16.86.72
 
 Now try clicking around the webpage and and watch what happens in the Wireshark window.  You should see clumps of packets start to populate your screen.  
 
-If you look at the "protocol" columnn, you will notice that some are TCP and others are HTTP--and that TCP preceeds HTTP.  If you double-click on one of the packets, you'll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  
+If you look at the "protocol" column, you will notice that some are TCP and others are HTTP--and that TCP precedes HTTP.  If you double-click on one of the packets, you'll get a popup window.  In the top pane of the window, you have five lines.  Each one of those lines is a "layer" in the network.  They go from low-level to high-level.  The first line is the lowest layer, and the last is HTTP.  
 
 These layers bring us to the so-called "OSI model". The OSI (Open Systems Interconnection) model is an abstraction that is used to understand the different layers in a network-- all the way from wires to cat pictures.
 
@@ -129,7 +129,7 @@ It turns out that duckduckgo.com's certificate doesn't just contain information 
 
 And if we do the same thing with DigiCert SHA2 Secure Server CA's certificate, we find that it was issued by DigiCert Global Root CA.  
 
-Wait, so the same company, DigiCert is issuing certificates to itself?  There's actually a good reason for that.  You'll learn more when you do today's challenges.  It turns out that the entire system of credibility that undergirds encrytption on the internet is just a small group of big companies saying that they trust each other--so you can trust who they trust.  Yikes!
+Wait, so the same company, DigiCert is issuing certificates to itself?  There's actually a good reason for that.  You'll learn more when you do today's challenges.  It turns out that the entire system of credibility that undergirds encryption on the internet is just a small group of big companies saying that they trust each other--so you can trust who they trust.  Yikes!
 
 But it seems to be working for the moment.  Those top level players are called Certificate Authorities, and all roads lead to them.
 
@@ -150,13 +150,13 @@ In fact there is a command line utility that allows us to generate our own certi
 openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
 ```
 
-Congratulations, you've just generated a public key and a private key that can be used to encrypt communication on the web!  The problem is that this is a "self-signed" certificate--outside the web of trust spun by the Certificate Authorities.  It still works though.  In fact DigiCert Global Root CA probably ran the same command to generate their own root certificate--they just did it in an underground bunker somwhere in Nevada.
+Congratulations, you've just generated a public key and a private key that can be used to encrypt communication on the web!  The problem is that this is a "self-signed" certificate--outside the web of trust spun by the Certificate Authorities.  It still works though.  In fact DigiCert Global Root CA probably ran the same command to generate their own root certificate--they just did it in an underground bunker somewhere in Nevada.
 
 
 ### Back to HTTPS
 Now that we know a little bit about the mechanism that enables trust on the internet, let's get back to our packets.
 
-We saw some TCP packets that preceeded either the HTTP or TLS protocols.  HTTPS adds some extra steps to the initial interaction between a client (browser) and a server. Before sending the application data (OSI layer 7), there is what is called a "TLS handshake".  The TLS handshake is where the encryption is negotiated.
+We saw some TCP packets that preceded either the HTTP or TLS protocols.  HTTPS adds some extra steps to the initial interaction between a client (browser) and a server. Before sending the application data (OSI layer 7), there is what is called a "TLS handshake".  The TLS handshake is where the encryption is negotiated.
 
 ![TLS Handshake](readme/tls_handshake.png)
 
@@ -185,12 +185,12 @@ If the certificate checks out, and the client (browser) trusts that the server i
 
 The process of negotiating encryption is fairly complicated, so before we talk about the third step, let's try to understand a simplified example.  
 
-## Ceasar Cipher Spycraft
+## Caesar Cipher Spycraft
 Let's imagine two secret agents, Alice and Bob.  They live far away from each other, but need to communicate securely.  So they agree to encrypt their letters using a Caesar Cipher--pretty clever.  Anyone who intercepts their letters will just see gibberish.  
 
 But there is a problem.
 
-If Alice wants to exchange encrypted letters with Bob using a Ceasar Cipher, they both need to have the same secret key to encode/decode the letter (for example, the number "17").  In other words, they need a "symmetric" key--one that is the same for both of them.  But how can Alice tell Bob what the secret key is?  If she simply writes the key in the top corner of the letter, anyone who intercepts the letter will be able to decode it.  
+If Alice wants to exchange encrypted letters with Bob using a Caesar Cipher, they both need to have the same secret key to encode/decode the letter (for example, the number "17").  In other words, they need a "symmetric" key--one that is the same for both of them.  But how can Alice tell Bob what the secret key is?  If she simply writes the key in the top corner of the letter, anyone who intercepts the letter will be able to decode it.  
 
 A real conundrum, but there might be a way around it.  Alice thinks about establishing a dead-drop that only she and Bob would know about, where she can write the secret key in chalk above a certain door.  But then she gets stuck trying to figure out how to securely communicate to Bob about the dead-drop's location...  She has uncovered a fundamental problem in securing symmetrically encrypted communications:  how to begin?
 
@@ -202,7 +202,7 @@ She explained it to me over a beer one night, but frankly, most of the details w
 
 Alice said that she and Bob wanted to pass secret messages to each other, but needed a way to start the process without having a shared secret (symmetric key).  So naturally, she said, why not use an "asymmetric" key?  An asymmetric approach allows both parties to have their own private key, and a second public key that anyone can see.
 
-She then implemented her asymmetic key idea by generating two very large numbers that are mathematically related, but (effectively) impossible to guess.
+She then implemented her asymmetric key idea by generating two very large numbers that are mathematically related, but (effectively) impossible to guess.
 
 Alice keeps one of them to herself <b>(private key)</b>, and posts the other one publicly as her pinned Tweet <b>(public key)</b> so that anyone, including Bob, can see it.
 
@@ -213,7 +213,7 @@ When Bob wants to send a message to Alice, he encrypts his message with <i>Alice
 The same thing happens when Alice wants to send a message to Bob:
 When Alice wants to send a message to Bob, she encrypts her message with <i>Bob's</i> <b>(public key)</b>.  Bob then uses his <b>(private key)</b> to decrypt Alice's message.
 
-The whole thing souned crazy to me, so when I got home from the bar that night, I opened up my notebook and tried to figure out how it worked.  Since I'm not the brightest tool in the shed, I decided to use very small numbers.
+The whole thing sounded crazy to me, so when I got home from the bar that night, I opened up my notebook and tried to figure out how it worked.  Since I'm not the brightest tool in the shed, I decided to use very small numbers.
 
 I think I figured out how Alice and Bob can generate a symmetric key seemingly out of thin air--even though they don't know each other's private keys.
 
@@ -233,13 +233,13 @@ Bob's private key: 6, shared secret: 9
     Bob's decryption of Alice's encrypted message: TheBeerRunsAtMidnight
 ```
 
-It's OK, I don't understand it either.  The point is that, through some mathmatical wizardry, both Alice and Bob end up deciding on the same symmetric key for their Ceasar Cipher encryption--even though both parties have withheld information from the other.
+It's OK, I don't understand it either.  The point is that, through some mathematical wizardry, both Alice and Bob end up deciding on the same symmetric key for their Caesar Cipher encryption--even though both parties have withheld information from the other.
 
 #### The Client and Server Negotiate Encryption
 What Alice discovered is called Public Key Cryptography. It is a system that allowed her and Bob to bootstrap a secure communication session.
 HTTPS (TLS) <i>starts out</i> using asymmetric keys, but then generates symmetric keys to use for the rest of the session.
 
-When you generated the public/private key pair earler using the openssl command line utility, you enabled yourself to bootstrap a secure communication session with someone.  That is the basis of secure communication on the internet.
+When you generated the public/private key pair earlier using the openssl command line utility, you enabled yourself to bootstrap a secure communication session with someone.  That is the basis of secure communication on the internet.
 
 ## Challenges
 
@@ -281,7 +281,7 @@ Once you get that going, you can test out your wire sniffing skills (on loopback
 ##### Part II
 <b>Note: For this one you need to tell Chrome to relax.  chrome://flags/#allow-insecure-localhost</b>
 
-So far so good.  Now we are going to fix things.  Instead of an HTTP server, we are going to make an HTTPS server.  In order to do that you'll need to get yourself a certificate (a public/private key pair).  I think there was a command for doing just that somewhere in the lesson.
+So far so good.  Now we are going to fix things.  We're going to turn our HTTP into an HTTPS server.  You shouldn't have to change too much. In order to do that you'll need to get yourself a certificate (a public/private key pair).  I think there was a command for doing just that somewhere in the lesson.
 
 Once you get it working, unleash your wire sniffer and see if you can capture the credentials.  
 
@@ -295,7 +295,7 @@ Once you get it working, unleash your wire sniffer and see if you can capture th
 ##### <span style="color: red;">Solution:</span> 
 (add to Trusted Root Certification Authorities store)
 
-2. Imagne yourself as the newest Certificate Authority.  You wouldn't want to directly sign a website's certificate.  If anything went wrong you might invalidate your root certificate.  To mitigate your risk, create an intermediate certificate that can do the dirty work of signing a website's certificate.
+2. Imagine yourself as the newest Certificate Authority.  You wouldn't want to directly sign a website's certificate.  If anything went wrong you might invalidate your root certificate.  To mitigate your risk, create an intermediate certificate that can do the dirty work of signing a website's certificate.
 
 ##### <span style="color: red;">Solution:</span> 
 https://raymii.org/s/tutorials/OpenSSL_command_line_Root_and_Intermediate_CA_including_OCSP_CRL%20and_revocation.html
