@@ -29,7 +29,7 @@ Hopefully, after using Wireshark, you'll be just a little bit more paranoid abou
 
 (run capture)
 
-Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, but we don't worry.  We're going to walk through a few important points.
+Depending on what you were doing, you probably got quite a bit more than you were expecting.  All that output can be overwhelming, but don't worry.  We're going to walk through a few important points.
 
 Instead of just capturing everything, let's focus in on one particular website using a filter.  We will look at derpturkey.com, a random Javascript coding blog.  We'll first get the ip address so that we can filter our network capture:
 
@@ -177,7 +177,7 @@ In order to do that, as we've already seen, the server sends along its certifica
 ##### The Client Authenticates the Certificate
 As we've seen, what the server sends the client isn't just it's own certificate (called a "leaf", because it is at the end of the "branch"), but a <b>chain</b> of certificates.  The client then checks that the chain leading from the server's leaf certificate all the way up to the Certificate Authority is valid.  That Certificate Authority's root certificate is stored in your browser and/or operating system.
 
-It must ensure that the chain matches, the certificates are not expired, and the certificates have not been revoked.  
+After your browser recovers from that mixed metaphor, it must ensure that the chain matches, the certificates are not expired, and the certificates have not been revoked.  
 
 It is worth noting here that a valid certificate only establishes the <i>identity</i> of the certificate holder, not moral uprightness.  It's like checking a salesman's driver's licence.  At least it's something.
 
@@ -185,18 +185,18 @@ If the certificate checks out, and the client (browser) trusts that the server i
 
 The process of negotiating encryption is fairly complicated, so before we talk about the third step, let's try to understand a simplified example.  
 
-## Ceasar Cipher Example
+## Ceasar Cipher Spycraft
 Let's imagine two secret agents, Alice and Bob.  They live far away from each other, but need to communicate securely.  So they agree to encrypt their letters using a Caesar Cipher--pretty clever.  Anyone who intercepts their letters will just see gibberish.  
 
 But there is a problem.
 
-If Alice wants to exchange encrypted letters with Bob using a Ceasar Cipher, they both need to have the same secret key to encode/decode the letter (for example, the number "17").  In other words, they need a "symmetric" key.  But how can Alice tell Bob what the secret key is?  If she simply writes the key in the top corner of the letter, anyone who intercepts the letter will be able to decode it.  
+If Alice wants to exchange encrypted letters with Bob using a Ceasar Cipher, they both need to have the same secret key to encode/decode the letter (for example, the number "17").  In other words, they need a "symmetric" key--one that is the same for both of them.  But how can Alice tell Bob what the secret key is?  If she simply writes the key in the top corner of the letter, anyone who intercepts the letter will be able to decode it.  
 
-A real conundrum, but there might be a way around it.  Alice thinks about establishing a dead-drop that only she and Bob both know about, where she can write the secret key in chalk above a certain door.  But then she gets stuck trying to figure out how to securely communicate to Bob about the dead-drop's location...  She has uncovered a fundamental problem in securing symmetrically encrypted communications:  how to begin?
+A real conundrum, but there might be a way around it.  Alice thinks about establishing a dead-drop that only she and Bob would know about, where she can write the secret key in chalk above a certain door.  But then she gets stuck trying to figure out how to securely communicate to Bob about the dead-drop's location...  She has uncovered a fundamental problem in securing symmetrically encrypted communications:  how to begin?
 
 She needs to have secure communication to initiate secure communication.
 
-Fortunately, Alice is something of a math whiz, and she came up with a solution that works.  
+Fortunately, Alice is something of a math whiz, and she came up with a workaround.  
 
 She explained it to me over a beer one night, but frankly, most of the details were over my head.  It's a little hazy, but here's what I remember.
 
@@ -204,7 +204,7 @@ Alice said that she and Bob wanted to pass secret messages to each other, but ne
 
 She then implemented her asymmetic key idea by generating two very large numbers that are mathematically related, but (effectively) impossible to guess.
 
-Alice keeps one of them to herself <b>(private key)</b>, and posts the other one publicly as her pinned Tweet<b>(public key)</b> so that anyone, including Bob, can see it.
+Alice keeps one of them to herself <b>(private key)</b>, and posts the other one publicly as her pinned Tweet <b>(public key)</b> so that anyone, including Bob, can see it.
 
 Bob does the same thing.  He generates two very large numbers that are mathematically related, but impossible to guess. Bob keeps one of them to himself <b>(private key)</b>, and posts the other one publicly as his pinned Tweet <b>(public key)</b>.
 
