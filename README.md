@@ -78,32 +78,40 @@ Wireshark also allows us to take a look at an entire conversation.  Choose a pac
 
 This packet capture represents the detailed history of our internet session.  It's a good thing we didn't send anything important over the wire!
 
-Now let's do the same with with a server that uses HTTPS:
+Now let's do the same with with a server that uses HTTPS, owasp.org:
 
-(Note: capture then find the ip address)
+![tcp-tls](readme/tls-owasp.png)
 
+To find what we're looking for, we can either just scan the resulting packets ourselves, or play around with the filters.  
+
+If we wanted to filter our results by IP address, we would first need to find owasp.org's IP address:
 ```bash
-curl google.com -v
-curl duckduckgo.com -v
+curl owasp.org -v
 ```
-
+Then we apply the filter:
 ```bash
-ip.addr == 172.217.8.206  //use duckduckgo, search for network security
-ip.addr == 107.20.240.232
+ip.addr == ipv6.src == 2601:240:c400:8660:f451:8c51:19cd:9c88 or ipv6.dst == 2601:240:c400:8660:f451:8c51:19cd:9c88
 ```
-![tcp-tls](readme/tcp-tls.png)
+When we compare these results to our earlier HTTP capture, we find a several differences.  First off, the protocols are different.  Instead of HTTP, we have TLS, which you can think of as encrypted HTTP or HTTPS.  What other differences do you notice? 
+    
+(port, encrypted application data is gibberish, more packets, etc)
 
-Here you'll notice a couple differences.  First off, the protocols are different.  Instead of HTTP, we have TLS, which you can think of as encrypted HTTP or HTTPS.  What other differences do you notice? 
-    -port, encrypted application data is gibberish
-
-![tcp-stream](readme/tcp-stream.png)
+![tcp-stream](readme/encrypted-application-data-owasp.png)
 
 Here we have no idea what information we were sending to the server.  So even if someone had intercepted this, they wouldn't be able to do anything with it. If I were giving someone my credit card information, this is how I'd want to do it.
+
+There's a whole lot more than just this.  For example, we can also take a look at the "certificate" that the owasp.org server sent to us:
+
+![owasp-certificate](readme/certificate-owasp.png)
+
+And we can take a more detailed view, where we can see a few tidbits of information:
+
+![cert-detail](readme/cert-detail-owasp.png)
 
 ### Certificates
 OK, so now we know that HTTP is unencrypted and HTTPS is encrypted.  But how does this encryption happen?  The long answer is long, but the short answer is: certificates.  
 
-It's pretty easy to get your hand on a certificate--at least to look at.  Just go to any page that uses HTTPS:
+It's pretty easy to get your hands on a certificate--at least to look at.  Just go to any page that uses HTTPS:
 
 ```bash
 duckduckgo.com
@@ -117,7 +125,7 @@ We can continue to find out more if we click on the certificate. The certificate
 
 Why does it look like duckduckgo.com has three certificates?
 
-It turns out the duckduckgo.com's certificate doesn't just contain information about itself, but also information about the certificate (DigiCert SHA2 Secure Server CA) that is vouching for duckduckgo.com's certificate.
+It turns out that duckduckgo.com's certificate doesn't just contain information about itself, but also information about the certificate (DigiCert SHA2 Secure Server CA) that is vouching for duckduckgo.com's certificate.
 
 And if we do the same thing with DigiCert SHA2 Secure Server CA's certificate, we find that it was issued by DigiCert Global Root CA.  
 
@@ -129,16 +137,26 @@ The chain of certificates that starts with duckduckgo.com leads up to one of the
 
 So why should I trust DigiCert Global Root CA, I've never even heard of them?
 
-It turns out that you don't have to, because your browser or operating system trusts them for you. Go to you settings in Google Chrome and search for "Manage Certificates".  Eventually you should be able to see all of the certificates from the Certificate Authorities:
+It turns out that you don't have to, because your browser or operating system trusts them for you. Go to your settings in Google Chrome and search for "Manage Certificates".  Eventually you should be able to see all of the certificates from the Certificate Authorities:
 
 ![Root CAs](readme/root-ca.png)
 
-Yes, you've had all these certificates the whole time.  Later on, you'll see what happens when that certificate chain has a broken link, and what you might be able to do to fix it.
+Yes, you've had all these certificates the whole time!  
+
+### Generating Certificates
+In fact there is a command line utility that allows us to generate our own certificates all day long.  Try it!
+
+```bash
+openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+```
+
+Congratulations, you've just generated a public key and a private key that can be used to encrypt communication on the web!  The problem is that this is a "self-signed" certificate--outside the web of trust spun by the Certificate Authorities.  It still works though.  In fact DigiCert Global Root CA probably ran the same command to generate their own root certificate--they just did it in an underground bunker somwhere in Nevada.
+
 
 ### Back to HTTPS
 Now that we know a little bit about the mechanism that enables trust on the internet, let's get back to our packets.
 
-We saw some TCP packets that preceeded either the HTTP or TLS protocols.  HTTPS adds some extra steps to the initial interaction between a client (browser) and a server. Before sending the application data (OSI layer 7), there is what is called a "TLS handshake".  The TLS handshake is when the encryption is negotiated.
+We saw some TCP packets that preceeded either the HTTP or TLS protocols.  HTTPS adds some extra steps to the initial interaction between a client (browser) and a server. Before sending the application data (OSI layer 7), there is what is called a "TLS handshake".  The TLS handshake is where the encryption is negotiated.
 
 ![TLS Handshake](readme/tls_handshake.png)
 
@@ -149,7 +167,7 @@ We are going to present a somewhat simplified overview of that negotiation--call
 
 1. The Server Sends the Certificate to the Client
 2. The Client Authenticates the Certificate
-3. Negotiate Encryption
+3. The Client and Server Negotiate Encryption
 
 ##### The Server Sends the Certificate to the Client
 Before any application data is sent (i.e. the webpage), an encrypted session needs to be established between the client and the server.  The server is the responsible party here.  It is the server's duty to establish trustworthiness.  
@@ -165,28 +183,30 @@ It is worth noting here that a valid certificate only establishes the <i>identit
 
 If the certificate checks out, and the client (browser) trusts that the server is who it says it is, then the client and server can agree on encryption.
 
-The process of negotiating encryption is fairly complicated, so let's look at a simplified example.  
+The process of negotiating encryption is fairly complicated, so before we talk about the third step, let's try to understand a simplified example.  
 
 ## Ceasar Cipher Example
-Let's imagine two secret agents, Alice and Bob.  They live far away from each other, but need to communicate securely.  So they decide to encrypt their letters using a Caesar Cipher--pretty clever.  Anyone who intercepts their letters will just see gibberish.  
+Let's imagine two secret agents, Alice and Bob.  They live far away from each other, but need to communicate securely.  So they agree to encrypt their letters using a Caesar Cipher--pretty clever.  Anyone who intercepts their letters will just see gibberish.  
 
 But there is a problem.
 
-If Alice want to exchange encrypted letters with Bob using a Ceasar Cipher, they both need to have the same secret key to encode/decode the letter.  But how can Alice tell Bob what the secret key is?  If she simply writes the key in the top corner of the letter, anyone who intercepts the letter will be able to decode it.  
+If Alice wants to exchange encrypted letters with Bob using a Ceasar Cipher, they both need to have the same secret key to encode/decode the letter (for example, the number "17").  In other words, they need a "symmetric" key.  But how can Alice tell Bob what the secret key is?  If she simply writes the key in the top corner of the letter, anyone who intercepts the letter will be able to decode it.  
 
-A real conundrum, but there might be a way around it.  Alice thinks about establishing a dead-drop that she and Bob both know about, where she can write the secret key in chalk above a certain door.  But then she gets stuck trying to figure out how to securely communicate to Bob about the dead-drop's location...  She has to have secure communication to initiate secure communication.
+A real conundrum, but there might be a way around it.  Alice thinks about establishing a dead-drop that only she and Bob both know about, where she can write the secret key in chalk above a certain door.  But then she gets stuck trying to figure out how to securely communicate to Bob about the dead-drop's location...  She has uncovered a fundamental problem in securing symmetrically encrypted communications:  how to begin?
+
+She needs to have secure communication to initiate secure communication.
 
 Fortunately, Alice is something of a math whiz, and she came up with a solution that works.  
 
-She explained it to me over a beer one night, but most of the details were lost on me.  It's a little hazy, but here's what I remember.
+She explained it to me over a beer one night, but frankly, most of the details were over my head.  It's a little hazy, but here's what I remember.
 
-Alice said that she and Bob wanted to pass secret messages to each other.  So here is what Alice came up with:
-Alice generates two very large numbers that are mathematically related, but impossible to guess.
-Alice keeps one of them to herself <b>(private key)</b>, and posts the other one publicly as her pinned Tweet<b>(public key)</b>.
+Alice said that she and Bob wanted to pass secret messages to each other, but needed a way to start the process without having a shared secret (symmetric key).  So naturally, she said, why not use an "asymmetric" key?  An asymmetric approach allows both parties to have their own private key, and a second public key that anyone can see.
 
-Bob does the same thing.  
-Bob generates two very large numbers that are mathematically related, but impossible to guess.
-Bob keeps one of them to himself <b>(private key)</b>, and posts the other one publicly as his pinned Tweet <b>(public key)</b>.
+She then implemented her asymmetic key idea by generating two very large numbers that are mathematically related, but (effectively) impossible to guess.
+
+Alice keeps one of them to herself <b>(private key)</b>, and posts the other one publicly as her pinned Tweet<b>(public key)</b> so that anyone, including Bob, can see it.
+
+Bob does the same thing.  He generates two very large numbers that are mathematically related, but impossible to guess. Bob keeps one of them to himself <b>(private key)</b>, and posts the other one publicly as his pinned Tweet <b>(public key)</b>.
 
 When Bob wants to send a message to Alice, he encrypts his message with <i>Alice's</i> <b>(public key)</b>.  Alice then uses her <b>(private key)</b> to decrypt Bob's message.  It sounded impossible to me, but I tried it out and it seems to work because the public key and the private key are mathematically related somehow.
 
@@ -195,51 +215,31 @@ When Alice wants to send a message to Bob, she encrypts her message with <i>Bob'
 
 The whole thing souned crazy to me, so when I got home from the bar that night, I opened up my notebook and tried to figure out how it worked.  Since I'm not the brightest tool in the shed, I decided to use very small numbers.
 
-I think I figured out how Alice and Bob can use the same secret key to encrypt and decrypt their messages, even though they don't know each other's private keys.
+I think I figured out how Alice and Bob can generate a symmetric key seemingly out of thin air--even though they don't know each other's private keys.
 
-Crazy! 
-
-To see how the symmetric key is generated from an asymmetric one, go ahead and run this command from the bob_alice folder:
-
+I saved my notebook in a folder called "bob_alice".  To see how the symmetric key is generated from an asymmetric one, go ahead and run this command from inside it:
 
 ```python
 python alice_bob_message_exchange.py
 ```
-
 You can run it over and over again, and it works every time.  Here's an example:
 
 ```bash
 Public key: public_key_base 3, public_key_modulus 23
-Alice's private key: 1, shared secret: 1
-Bob's private key: 6, shared secret: 1
+Alice's private key: 4, shared secret: 9
+Bob's private key: 6, shared secret: 9
     Alice's original message: TheBeerRunsAtMidnight
-    Alice's encrypted message: UifCffsSvotBuNjeojhiu
+    Alice's encrypted message: CqnKnnaAdwbJcVrmwrpqc
     Bob's decryption of Alice's encrypted message: TheBeerRunsAtMidnight
 ```
 
+It's OK, I don't understand it either.  The point is that, through some mathmatical wizardry, both Alice and Bob end up deciding on the same symmetric key for their Ceasar Cipher encryption--even though both parties have withheld information from the other.
 
-Feel free to let your eyes glaze over.  The point is that, through some mathmatical wizardry, both Alice and Bob end up deciding on the same number for the Ceasar Cipher.
+#### The Client and Server Negotiate Encryption
+What Alice discovered is called Public Key Cryptography. It is a system that allowed her and Bob to bootstrap a secure communication session.
+HTTPS (TLS) <i>starts out</i> using asymmetric keys, but then generates symmetric keys to use for the rest of the session.
 
-If we now run alice_bob_message_exchange.py, we see that an encrypted message can be sent and received, even though both parties have withheld information.
-
-
-
-#### Negotiate Encryption
-What Alice discovered is called Public Key Cryptography. It is a system that allowed her and Bob to bootstrap secure communication.
-HTTPS uses asymmetric keys, along with an agreed upon algorithm, to generate symmetric keys.
-
-In fact there is a command line utility that allows us to generate certificates all day long.  Try it!
-
-```bash
-openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
-```
-
-You've just generated a public key and a private key that can be used to encrypt communication.  The problem is that this is a "self-signed" certificate--outside the web of trust spun by the Certificate Authorities.  It still works though.
-
-The initial connection is asymmetric.  The client encrypts data using the server's public key.  Then, once the client and server agree on a session key (a symmetric key), they can have two-way encrypted communication.
-
-Through some kind of magic, public key cryptography allows two people to share encrypted information even when the encryptor uses a publicly available key.  It sounds strange, but here is how it goes.  In fact, her solution is the basis of secure communication on the internet--the "S" in HTTPS. 
-
+When you generated the public/private key pair earler using the openssl command line utility, you enabled yourself to bootstrap a secure communication session with someone.  That is the basis of secure communication on the internet.
 
 ## Challenges
 
